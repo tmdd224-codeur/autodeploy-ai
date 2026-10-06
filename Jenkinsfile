@@ -22,16 +22,14 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    def scannerHome = tool 'SonarScanner'
-
-                    sh """
-                        ${scannerHome}/bin/sonar-scanner \
+                    sh '''
+                        sonar-scanner \
                           -Dsonar.projectKey=autodeploy-ai \
-                          -Dsonar.projectName='AutoDeploy AI' \
+                          -Dsonar.projectName="AutoDeploy AI" \
                           -Dsonar.sources=app \
                           -Dsonar.tests=tests \
                           -Dsonar.python.version=3.12
-                    """
+                    '''
                 }
             }
         }
