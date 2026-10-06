@@ -1,5 +1,10 @@
 from fastapi import FastAPI, Response
-from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import (
+    Counter,
+    Histogram,
+    generate_latest,
+    CONTENT_TYPE_LATEST
+)
 
 app = FastAPI(
     title="AutoDeploy AI API",
@@ -12,11 +17,19 @@ REQUEST_COUNT = Counter(
     "Nombre total de requêtes HTTP"
 )
 
+REQUEST_LATENCY = Histogram(
+    "autodeploy_http_request_duration_seconds",
+    "Durée des requêtes HTTP en secondes"
+)
+
 
 @app.middleware("http")
 async def metrics_middleware(request, call_next):
-    response = await call_next(request)
+    with REQUEST_LATENCY.time():
+        response = await call_next(request)
+
     REQUEST_COUNT.inc()
+
     return response
 
 
