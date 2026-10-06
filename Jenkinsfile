@@ -47,6 +47,16 @@ pipeline {
                 '''
             }
         }
+
+        stage('Trivy Security Scan') {
+            steps {
+                sh '''
+                    trivy image \
+                      --severity HIGH,CRITICAL \
+                      autodeploy-ai:${BUILD_NUMBER}
+                '''
+            }
+        }
     }
 
     post {
@@ -59,3 +69,5 @@ pipeline {
         }
     }
 }
+
+
