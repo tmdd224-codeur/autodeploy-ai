@@ -59,6 +59,32 @@ pipeline {
                 '''
             }
         }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-autodeploy',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login \
+                          -u "$DOCKER_USERNAME" \
+                          --password-stdin
+
+                        docker tag autodeploy-ai:${BUILD_NUMBER} \
+                          tmdd224/autodeploy-ai:${BUILD_NUMBER}
+
+                        docker push \
+                          tmdd224/autodeploy-ai:${BUILD_NUMBER}
+
+                        docker logout
+                    '''
+                }
+            }
+        }
     }
 
     post {
@@ -72,5 +98,4 @@ pipeline {
     }
 }
 
-             
 
