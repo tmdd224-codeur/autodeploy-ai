@@ -15,28 +15,36 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh '.venv/bin/python -m pytest'
+                sh '''
+                    .venv/bin/python -m pytest
+                '''
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=autodeploy-ai \
-                          -Dsonar.projectName="AutoDeploy AI" \
-                          -Dsonar.sources=app \
-                          -Dsonar.tests=tests \
-                          -Dsonar.python.version=3.12
-                    '''
+                script {
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                              -Dsonar.projectKey=autodeploy-ai \
+                              -Dsonar.projectName="AutoDeploy AI" \
+                              -Dsonar.sources=app \
+                              -Dsonar.tests=tests \
+                              -Dsonar.python.version=3.12
+                        """
+                    }
                 }
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t autodeploy-ai:${BUILD_NUMBER} .'
+                sh '''
+                    docker build -t autodeploy-ai:${BUILD_NUMBER} .
+                '''
             }
         }
     }
