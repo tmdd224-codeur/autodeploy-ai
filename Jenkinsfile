@@ -85,6 +85,26 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker pull tmdd224/autodeploy-ai:${BUILD_NUMBER}
+
+                    docker stop autodeploy-api || true
+                    docker rm autodeploy-api || true
+
+                    docker run -d \
+                      --name autodeploy-api \
+                      -p 8000:8000 \
+                      tmdd224/autodeploy-ai:${BUILD_NUMBER}
+
+                    sleep 5
+
+                    curl -f http://localhost:8000/health
+                '''
+            }
+        }
     }
 
     post {
